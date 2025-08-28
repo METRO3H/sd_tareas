@@ -1,0 +1,21 @@
+version: "3.9"
+
+services:
+   api_fetcher:
+      build: "./api_fetcher"
+      container_name: "api_fetcher"
+      environment:
+          - GOOGLE_API_KEY=${GOOGLE_API_KEY}
+
+      volumes:
+          - responses_data:/app/responses_data
+
+      networks:
+          - netuworku
+
+volumes:
+  responses_data:
+
+networks:
+   netuworku:
+      driver: bridge
