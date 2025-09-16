@@ -1,4 +1,23 @@
+# ignore every pdf
+**/*.pdf
+
+# ignore every png
+**/*.png
+
+# ignore every jpg
+**/*.jpg
+
+# ignore every jpeg
+**/*.jpeg
+
+# ignore every txt
+**/*.txt
+
+# ignore every json
+**/*.json
+
+# ignore every csv
+**/*.csv
+
+# ignore .env
 .env
-*.json
-toDo.txt
-test
