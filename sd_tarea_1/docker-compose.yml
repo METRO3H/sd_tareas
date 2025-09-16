@@ -1,20 +1,28 @@
 version: "3.9"
 
 services:
-   api_fetcher:
-      build: "./api_fetcher"
-      container_name: "api_fetcher"
-      environment:
-          - GOOGLE_API_KEY=${GOOGLE_API_KEY}
-
-      volumes:
-          - responses_data:/app/responses_data
-
-      networks:
-          - netuworku
-
+    qa_score_server:
+        build: "./qa_score_server"
+        container_name: "qa_score_server"
+        environment:
+            - GOOGLE_API_KEY=${GOOGLE_API_KEY}
+        volumes:
+            - qa_score_server_data:/app/qa_score_server_data
+        networks:
+            - netuworku
+        ports:
+            - "8000:8000"
+    traffic_generator:
+        build: "./traffic_generator"
+        container_name: "traffic_generator"
+        volumes:
+            - traffic_generator_data:/app/traffic_generator_data
+        networks:
+            - netuworku
+      
 volumes:
-  responses_data:
+  qa_score_server_data:
+  traffic_generator_data:
 
 networks:
    netuworku:
