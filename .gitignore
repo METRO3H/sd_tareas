@@ -22,3 +22,7 @@
 
 # ignore .env
 .env
+
+# ignore folders
+__pycache__/
+*.py[cod]
