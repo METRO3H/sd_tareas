@@ -5,6 +5,7 @@ import json
 import requests
 
 MAX_ITERATIONS = 100000
+SEED = 123
 
 def filter_dataset(dataset):
     dataset.columns = ["class_index", "question_title", "question_body", "yahoo_answer"]
@@ -30,62 +31,65 @@ def get_yahoo_dataset():
 
 
 def request_server(request_data):
-    print("REQUEST SERVER", "\n")
     
-    # convert to json
-    request_data = json.dumps(request_data, indent=6, ensure_ascii=True)
- 
+    question_title = f'{request_data["idx"]} - "{request_data["question"]}"'
+    print(question_title)
+    
+    
+    URL = "http://middleware_server:8075"
+    
     try:
         # Have to define the URL
-        URL = "http://localhost:8000/api/v1/qa_score"
-        response = requests.post(URL, data=request_data)
+        response = requests.post(URL, json=request_data)
         
         if response.status_code != 200:
             raise Exception(f"There is an error. Status code: {response.status_code}")
         
-        print("[Status] Request sent successfully")
+        print("    ↳ Proccessed successfully")
         
         return response.json()
        
     
     except Exception as e:
-        print(f"[Error] Request not sent:\n", e)
+        print(f"    ↳ Error processing it :\n", e)
         return None
     
 def generate_traffic():
     dataset = get_yahoo_dataset()
-    
+
     if dataset is None:
         exit(1)
-    
-    gauss_distribution = generate_gaussian_distribution(MAX_ITERATIONS)
+
+    gauss_distribution = generate_gaussian_distribution(MAX_ITERATIONS, SEED)
     
     if gauss_distribution is None:
         exit(1)
-    
-    
+        
+    print(" ")
     for i in range(MAX_ITERATIONS):
-        print(f"\n[{i+1}/{MAX_ITERATIONS}]", end=" ")
+        print(f"[{i+1}/{MAX_ITERATIONS}]", end=" ")
         
         selected_rows = dataset[dataset["class_index"] == gauss_distribution[i]]
         
-        selected_row = selected_rows.sample(n=1)
+        selected_row = selected_rows.sample(n=1, random_state=SEED)
+        idx = selected_row.index[0]
 
         request_data = {
-            "question_title": selected_row["question_title"].item(),
+            "idx": int(idx),
+            "question": selected_row["question_title"].item(),
             "yahoo_answer": selected_row["yahoo_answer"].item()
         }
         
         response = request_server(request_data)
         
-        if response is None:
-            continue
+        # if response is None:
+        #     continue
         
-        response_json = json.dumps(response.json(), indent=6, ensure_ascii=True)
+        # response_json = json.dumps(response.json(), indent=6, ensure_ascii=True)
         
-        print(response_json)
+        # print(response_json)
         
-        time.sleep(3)
+        time.sleep(11)
         
         
     

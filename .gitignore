@@ -12,6 +12,7 @@
 
 # ignore every txt
 **/*.txt
+!requirements.txt
 
 # ignore every json
 **/*.json

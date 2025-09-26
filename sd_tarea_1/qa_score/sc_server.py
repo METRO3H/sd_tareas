@@ -11,7 +11,7 @@ class QA(BaseModel):
 app = FastAPI()
 
 @app.post("/")
-def qa_request(request: QA):
+def sc_request(request: QA):
     
     question = request.question
     yahoo_answer = request.yahoo_answer
@@ -22,8 +22,6 @@ def qa_request(request: QA):
     
     
     response = {
-            "question": question,
-            "yahoo_answer": yahoo_answer, 
             "gemini_answer": gemini_answer, 
             "score": score
         }

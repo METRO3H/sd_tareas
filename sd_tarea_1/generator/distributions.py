@@ -4,9 +4,6 @@ import matplotlib.pyplot as plt
 from collections import Counter
 from scipy.stats import norm
 
-SEED = 123
-RNG = numpy.random.default_rng(SEED)
-
 # Indexes near 5.5 are more likely to be selected
 # So this help to fix the frequency of every category in order to be "more accurate"
 # Example: Now [Entertainment & Music] will have the frequency corresponding to position 6 in the normal distribution
@@ -45,7 +42,9 @@ def graph_distribution(distribution, graph_title="Distribución observada"):
     plt.show()
     
     
-def generate_gaussian_distribution(MAX_ITERATIONS):
+def generate_gaussian_distribution(MAX_ITERATIONS, SEED):
+    
+    RNG = numpy.random.default_rng(SEED)
 
     gauss_distribution = []
     
