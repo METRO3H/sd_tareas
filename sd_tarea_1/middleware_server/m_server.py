@@ -1,8 +1,10 @@
 from fastapi import FastAPI
 from pydantic import BaseModel
 import requests
-import json
 import db
+import redis_client
+
+
 
 class QA(BaseModel):
     idx: int
@@ -37,12 +39,19 @@ def compare_answers(question: str, yahoo_answer: str):
         print(f"    ↳ Error scoring it :\n", e)
         return None
 
-def process_request(table_name: str, idx: int, question: str, yahoo_answer: str):
+def process_request(config: str, idx: int, question: str, yahoo_answer: str):
     
-    idx_status = db.check_qa(table_name, idx)
+    idx_status = redis_client.check_cache(config, idx)
     
     if idx_status:
-        print(f'[Status] Request with idx "{idx}" already processed')
+        print(f'[Status] Request with idx "{idx}" already in cache')
+        idx_status = db.register_cache_hit(config, idx) 
+        return
+    
+    db_status = db.check_qa(config, idx)
+    
+    if db_status:
+        print(f'[Status] Request with idx "{idx}" already in database')
         return
     
     response = compare_answers(question, yahoo_answer)
@@ -54,8 +63,22 @@ def process_request(table_name: str, idx: int, question: str, yahoo_answer: str)
     gemini_answer = response["gemini_answer"]
     score = response["score"]
     
-    db.save_qa(table_name, idx, question, yahoo_answer, gemini_answer, score)
+    db.save_qa(config, idx, question, yahoo_answer, gemini_answer, score)
     
+    data = {
+        "question": question,
+        "yahoo_answer": yahoo_answer,
+        "gemini_answer": gemini_answer,
+        "score": score
+        }
+    
+    result = redis_client.save_cache(config, idx, data)
+    
+    if not result:
+        print(f'[Error] Request with idx "{idx}" not saved in cache')
+        return
+    
+    print(f'[Status] Request with idx "{idx}" saved in cache')
     
     return 
 
@@ -68,7 +91,7 @@ def qa_request(request: QA):
         question = request.question
         yahoo_answer = request.yahoo_answer
         
-        process_request("qa_yahoo", idx, question, yahoo_answer)
+        process_request("gauss_lru_5mb_1min", idx, question, yahoo_answer)
         
         message = f'[Status] Request with idx "{idx}" processed successfully'
         

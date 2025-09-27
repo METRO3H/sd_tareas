@@ -21,6 +21,23 @@ services:
             interval: 10s
             timeout: 5s
             retries: 5
+    
+    redis_1:
+        image: redis:8.2.1
+        container_name: "redis_1"
+        volumes:
+            - ./redis/redis.conf:/usr/local/etc/redis/redis.conf
+            
+        command: ["redis-server", "/usr/local/etc/redis/redis.conf"]
+        networks:
+            - netuworku
+        ports:
+            - "6379:6379"
+        healthcheck:
+            test: ["CMD", "redis-cli", "ping"]
+            interval: 10s
+            timeout: 5s
+            retries: 5
     qa_score:
         build: "./qa_score"
         container_name: "qa_score"
@@ -54,7 +71,21 @@ services:
         depends_on:
             postgres:
                 condition: service_healthy
-
+            redis_1:
+                condition: service_healthy
+    redisinsight:
+        image: redislabs/redisinsight:2.70
+        container_name: redisinsight
+        restart: always
+        ports:
+            - "5540:5540"
+        networks:
+            - netuworku
+        volumes:
+            - redisinsight_data:/data
+        depends_on:
+            redis_1:
+                condition: service_healthy
     generator:
         build: "./generator"
         container_name: "generator"
@@ -73,7 +104,8 @@ volumes:
   generator_data:
   postgres_data:
   middleware_server_data:
-
+  redisinsight_data:
+  
 networks:
    netuworku:
       driver: bridge

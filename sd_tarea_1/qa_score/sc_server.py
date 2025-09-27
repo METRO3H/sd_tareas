@@ -26,9 +26,7 @@ def sc_request(request: QA):
             "score": score
         }
     
-    response_json = json.dumps(response, indent=4, ensure_ascii=False)
-    print(response_json)
-    
+    print("[Status] Answer scored successfully")
     return response
     
     

@@ -19,3 +19,4 @@ EXPOSE 8075
 
 # Run FastAPI with Uvicorn
 CMD ["uvicorn", "m_server:app", "--host", "0.0.0.0", "--port", "8075"]
+

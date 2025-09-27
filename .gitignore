@@ -16,12 +16,12 @@
 
 # ignore every json
 **/*.json
-
+!redis_config.json
 # ignore every csv
 **/*.csv
 
 # ignore .env
-.env
+*.env
 
 # ignore folders
 __pycache__/

@@ -1,5 +1,6 @@
 import os
 import psycopg
+
 connection_parameters = {
     "host": os.getenv("POSTGRES_HOST"),
     "port": os.getenv("POSTGRES_PORT"),
@@ -12,23 +13,40 @@ def get_connection():
     connection = psycopg.connect(**connection_parameters)
     return connection
 
-def check_qa(table_name, idx):
-    
-    query = "SELECT check_qa(%s, %s)"
-    
-    with get_connection() as connection:
-        with connection.cursor() as cursor:
-            cursor.execute(query, (table_name, idx))
-            
-            db_result = cursor.fetchone()[0]
 
-            return db_result
+def check_qa(table_name, idx):
+    query = "SELECT check_qa(%s, %s)"
+    try:
+        with get_connection() as connection:
+            with connection.cursor() as cursor:
+                cursor.execute(query, (table_name, idx))
+                db_result = cursor.fetchone()[0]
+
+                return db_result
+            
+    except Exception as e:
+        print("Error Postgres:", e)
+        return False
+
+
+
+def register_cache_hit(table_name, idx):
+    query = "CALL register_cache_hit(%s, %s)"
+    try:
+        with get_connection() as connection:
+            with connection.cursor() as cursor:
+                cursor.execute(query, (table_name, idx))
+        return True
+    except Exception as e:
+        return False
 
 def save_qa(table_name, idx, question, yahoo_answer, gemini_answer, score):
-    
     query = "CALL save_qa(%s, %s, %s, %s, %s, %s)"
-    
-    with get_connection() as connection:
-        with connection.cursor() as cursor:
-            cursor.execute(query, (table_name, idx, question, yahoo_answer, gemini_answer, score))
+    try:
+        with get_connection() as connection:
+            with connection.cursor() as cursor:
+                cursor.execute(query, (table_name, idx, question, yahoo_answer, gemini_answer, score))
+        return True
+    except Exception as e:
+        return False
             
