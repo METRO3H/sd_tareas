@@ -20,7 +20,9 @@ def save_cache(config: str, key: str, value, ttl: int = None):
         value = json.dumps(value)
         
         redis_client.set(key, value, ex=ttl)
-        return True
+        print(f'[Status] Request with key "{key}" saved in cache')
+        
     except redis.exceptions.RedisError as e:
+        
+        print(f'[Error] Request with key "{key}" not saved in cache')
         print("Error Redis SET:", e)
-        return False

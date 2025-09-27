@@ -30,3 +30,6 @@ def sc_request(request: QA):
     return response
     
     
+@app.get("/health")
+def health():
+    return {"status": "ok"}

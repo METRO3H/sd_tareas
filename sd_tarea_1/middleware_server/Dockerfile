@@ -9,6 +9,9 @@ RUN apt-get update && apt-get install -y \
     libpq-dev gcc python3-dev && \
     rm -rf /var/lib/apt/lists/*
 
+# Installing curl for healthcheck
+RUN apt-get update && apt-get install -y curl && rm -rf /var/lib/apt/lists/*
+
 COPY requirements.txt .
 
 # Installing the required dependencies using pip

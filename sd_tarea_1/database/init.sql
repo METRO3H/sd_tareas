@@ -4,7 +4,7 @@ CREATE TABLE IF NOT EXISTS gauss_lru_5mb_1min  (
     question TEXT NOT NULL,         -- la pregunta
     yahoo_answer TEXT NOT NULL,     -- respuesta de Yahoo
     gemini_answer TEXT,             -- respuesta de Gemini (puede ser NULL al inicio)
-    score NUMERIC(5,2),             -- puntaje de la respuesta (decimal opcional)
+    score INT NOT NULL,             -- puntaje de la respuesta
     cache_hit INT DEFAULT 0,        -- numero de veces que el resultado se ha obtenido de la caché
     creation_date TIMESTAMP DEFAULT NOW()  -- fecha de creación
 );
@@ -15,21 +15,30 @@ CREATE TABLE IF NOT EXISTS gauss_lru_5mb_1min  (
 CREATE OR REPLACE FUNCTION check_qa(
     table_name TEXT,
     p_idx INT
-) RETURNS BOOLEAN
+) RETURNS JSON
 LANGUAGE plpgsql
 AS $$
 DECLARE
-    row_exists BOOLEAN;
+    result_json JSON;
 BEGIN
-    -- Verifica si existe una fila con idx = p_idx
-    EXECUTE format('SELECT EXISTS(SELECT 1 FROM %I WHERE idx = $1)', table_name)
-    INTO row_exists
+    -- Ejecuta la consulta para obtener los datos en formato JSON
+    EXECUTE format('
+        SELECT json_build_object(
+            ''question'', question,
+            ''yahoo_answer'', yahoo_answer,
+            ''gemini_answer'', gemini_answer,
+            ''score'', score
+        ) 
+        FROM %I 
+        WHERE idx = $1', table_name)
+    INTO result_json
     USING p_idx;
 
-    IF row_exists THEN
-        RETURN TRUE;
+    IF result_json IS NOT NULL THEN
+        RETURN result_json;
     ELSE
-        RETURN FALSE; 
+        RETURN NULL;
+
     END IF;
 END;
 $$;
@@ -68,3 +77,4 @@ BEGIN
     USING p_idx, p_question, p_yahoo_answer, p_gemini_answer, p_score;
 END;
 $$;
+

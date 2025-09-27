@@ -45,14 +45,17 @@ def process_request(config: str, idx: int, question: str, yahoo_answer: str):
     
     if idx_status:
         print(f'[Status] Request with idx "{idx}" already in cache')
-        idx_status = db.register_cache_hit(config, idx) 
-        return
+        return db.register_cache_hit(config, idx) 
+        
     
-    db_status = db.check_qa(config, idx)
+    db_qa = db.check_qa(config, idx)
     
-    if db_status:
+    if db_qa:
         print(f'[Status] Request with idx "{idx}" already in database')
-        return
+        
+        return redis_client.save_cache(config, idx, data)
+
+        
     
     response = compare_answers(question, yahoo_answer)
     
@@ -72,15 +75,9 @@ def process_request(config: str, idx: int, question: str, yahoo_answer: str):
         "score": score
         }
     
-    result = redis_client.save_cache(config, idx, data)
+    return redis_client.save_cache(config, idx, data)
     
-    if not result:
-        print(f'[Error] Request with idx "{idx}" not saved in cache')
-        return
-    
-    print(f'[Status] Request with idx "{idx}" saved in cache')
-    
-    return 
+     
 
 @app.post("/")
 def qa_request(request: QA):
@@ -104,5 +101,7 @@ def qa_request(request: QA):
     
     
     
-    
+@app.get("/health")
+def status():
+    return {"status": "ok"}
     

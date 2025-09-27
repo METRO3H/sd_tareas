@@ -17,6 +17,7 @@
 # ignore every json
 **/*.json
 !redis_config.json
+!tests.json
 # ignore every csv
 **/*.csv
 
@@ -26,3 +27,6 @@
 # ignore folders
 __pycache__/
 *.py[cod]
+
+# ignore .md
+*.md
