@@ -1,5 +1,4 @@
-from fastapi import FastAPI
-from pydantic import BaseModel
+from fastapi import FastAPI, HTTPException
 from cache_manager import CacheManager
 from p_types.types import QA, Gauss
 from tests import gauss_tests
@@ -35,13 +34,16 @@ def compare_answers(question: str, yahoo_answer: str):
         print(f"    ↳ Error scoring it :\n", e)
         return None
 
-def process_request(config: str, idx: int, question: str, yahoo_answer: str):
+def process_request(config: str, idx: int, question: str, yahoo_answer: str, gemini_answer: str, score: int):
     
     idx_status = CacheManager.check_cache(config, idx)
     
     if idx_status:
         print(f'[Status] Request with idx "{idx}" already in cache')
-        return db.register_cache_hit(config, idx) 
+        db.register_cache_hit(config, idx) 
+        
+        return gemini_answer, score
+    
         
     
     db_qa = db.check_qa(config, idx)
@@ -49,16 +51,20 @@ def process_request(config: str, idx: int, question: str, yahoo_answer: str):
     if db_qa:
         print(f'[Status] Request with idx "{idx}" already in database')
         
-        return CacheManager.save_cache(config, idx, db_qa)
+        CacheManager.save_cache(config, idx, db_qa)
+        
+        return gemini_answer, score
 
-    response = compare_answers(question, yahoo_answer)
+    if not gemini_answer and score < 0 :
+        response = compare_answers(question, yahoo_answer)
+        
+        if response is None:
+            print(f'[Error] Request with idx "{idx}" not processed')
+            return gemini_answer, score
+        
+        gemini_answer = response["gemini_answer"]
+        score = response["score"]
     
-    if response is None:
-        print(f'[Error] Request with idx "{idx}" not processed')
-        return
-    
-    gemini_answer = response["gemini_answer"]
-    score = response["score"]
     
     db.save_qa(config, idx, question, yahoo_answer, gemini_answer, score)
     
@@ -69,7 +75,9 @@ def process_request(config: str, idx: int, question: str, yahoo_answer: str):
         "score": score
         }
     
-    return CacheManager.save_cache(config, idx, data)
+    CacheManager.save_cache(config, idx, data)
+    
+    return gemini_answer, score
     
 def process_gauss_request(gauss_data: Gauss):
     try:
@@ -77,9 +85,11 @@ def process_gauss_request(gauss_data: Gauss):
         question = gauss_data.question
         yahoo_answer = gauss_data.yahoo_answer
         
+        gemini_answer = ""
+        score = -1
         for config in gauss_tests:
             print(f'[Status] Processing request with config "{config}" and idx "{idx}"')
-            process_request(config, idx, question, yahoo_answer)
+            gemini_answer, score = process_request(config, idx, question, yahoo_answer, gemini_answer, score)
         
         message = f'[Status] Request with gauss distribution, and idx "{idx}" processed successfully'
         
@@ -97,8 +107,10 @@ def qa_request(request: QA):
         gauss_data = request.gauss
         
         gauss_result = process_gauss_request(gauss_data)
-
-        
+    
+        if not gauss_result:
+            raise Exception("There was an error processing the gauss request")
+    
         result = {
             "gauss": gauss_result
         }
@@ -107,7 +119,7 @@ def qa_request(request: QA):
     
     except Exception as e:
         print(f"[Error] Request not processed:\n", e)
-        return None
+        raise HTTPException(status_code=500, detail=str(e))
     
     
     

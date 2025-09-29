@@ -26,7 +26,7 @@ def sc_request(request: QA):
             "score": score
         }
     
-    print("[Status] Answer scored successfully")
+    print("[Status] Answer scored successfully | score: ", score)
     return response
     
     

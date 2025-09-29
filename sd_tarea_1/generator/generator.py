@@ -3,9 +3,12 @@ import pandas
 import time
 import json
 import requests
+import numpy
 
 MAX_ITERATIONS = 100000
 SEED = 123
+
+RNG = numpy.random.default_rng(SEED)
 
 def filter_dataset(dataset):
     dataset.columns = ["class_index", "question_title", "question_body", "yahoo_answer"]
@@ -56,13 +59,15 @@ def request_server(request_data):
 def get_data_from_gauss_distribution(dataset, gauss_distribution, index):
     selected_rows = dataset[dataset["class_index"] == gauss_distribution[index]]
     
-    selected_row = selected_rows.sample(n=1, random_state=SEED)
-    idx = selected_row.index[0]
+    rand_idx = RNG.integers(len(selected_rows))
+    selected_row = selected_rows.iloc[rand_idx]
+    
+    idx = selected_rows.index[rand_idx]
 
     data = {
         "idx": int(idx),
-        "question": selected_row["question_title"].item(),
-        "yahoo_answer": selected_row["yahoo_answer"].item()
+        "question": selected_row["question_title"],
+        "yahoo_answer": selected_row["yahoo_answer"]
     }
     
     return data
@@ -88,7 +93,7 @@ def generate_traffic(dataset, gauss_distribution):
         
         print(response)
         
-        time.sleep(11)
+        # time.sleep(11)
         
         
     

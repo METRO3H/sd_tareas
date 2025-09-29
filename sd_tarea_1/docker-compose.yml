@@ -61,7 +61,7 @@ services:
             - "8075:8075"
         healthcheck:
             test: ["CMD", "curl", "-f", "http://localhost:8075/health"]
-            interval: 20s
+            interval: 10s
             timeout: 5s
             retries: 5
 
