@@ -1,15 +1,11 @@
 from fastapi import FastAPI
 from pydantic import BaseModel
+from cache_manager import CacheManager
+from p_types.types import QA, Gauss
+from tests import gauss_tests
 import requests
 import db
-import redis_client
 
-
-
-class QA(BaseModel):
-    idx: int
-    question: str
-    yahoo_answer: str
     
 
 app = FastAPI()
@@ -41,7 +37,7 @@ def compare_answers(question: str, yahoo_answer: str):
 
 def process_request(config: str, idx: int, question: str, yahoo_answer: str):
     
-    idx_status = redis_client.check_cache(config, idx)
+    idx_status = CacheManager.check_cache(config, idx)
     
     if idx_status:
         print(f'[Status] Request with idx "{idx}" already in cache')
@@ -53,10 +49,8 @@ def process_request(config: str, idx: int, question: str, yahoo_answer: str):
     if db_qa:
         print(f'[Status] Request with idx "{idx}" already in database')
         
-        return redis_client.save_cache(config, idx, data)
+        return CacheManager.save_cache(config, idx, db_qa)
 
-        
-    
     response = compare_answers(question, yahoo_answer)
     
     if response is None:
@@ -75,24 +69,41 @@ def process_request(config: str, idx: int, question: str, yahoo_answer: str):
         "score": score
         }
     
-    return redis_client.save_cache(config, idx, data)
+    return CacheManager.save_cache(config, idx, data)
     
-     
+def process_gauss_request(gauss_data: Gauss):
+    try:
+        idx = gauss_data.idx
+        question = gauss_data.question
+        yahoo_answer = gauss_data.yahoo_answer
+        
+        for config in gauss_tests:
+            print(f'[Status] Processing request with config "{config}" and idx "{idx}"')
+            process_request(config, idx, question, yahoo_answer)
+        
+        message = f'[Status] Request with gauss distribution, and idx "{idx}" processed successfully'
+        
+        return message
+
+    except Exception as e:
+        print(f'[Error] Request with gauss distribution, and idx "{idx}" not processed:\n', e)
+        return None
 
 @app.post("/")
 def qa_request(request: QA):
     
     try:
+
+        gauss_data = request.gauss
         
-        idx = request.idx
-        question = request.question
-        yahoo_answer = request.yahoo_answer
+        gauss_result = process_gauss_request(gauss_data)
+
         
-        process_request("gauss_lru_5mb_1min", idx, question, yahoo_answer)
+        result = {
+            "gauss": gauss_result
+        }
         
-        message = f'[Status] Request with idx "{idx}" processed successfully'
-        
-        return message
+        return result
     
     except Exception as e:
         print(f"[Error] Request not processed:\n", e)

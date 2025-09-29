@@ -22,27 +22,13 @@ services:
             timeout: 5s
             retries: 5
     
-    redis_1:
-        image: redis:8.2.1
-        container_name: "redis_1"
-        volumes:
-            - ./redis/redis.conf:/usr/local/etc/redis/redis.conf
-            
-        command: ["redis-server", "/usr/local/etc/redis/redis.conf"]
-        networks:
-            - netuworku
-        ports:
-            - "6379:6379"
-        healthcheck:
-            test: ["CMD", "redis-cli", "ping"]
-            interval: 10s
-            timeout: 5s
-            retries: 5
     qa_score:
         build: "./qa_score"
         container_name: "qa_score"
         environment:
-            - GOOGLE_API_KEY=${GOOGLE_API_KEY}
+            - GOOGLE_API_KEY_1=${GOOGLE_API_KEY_1}
+            - GOOGLE_API_KEY_2=${GOOGLE_API_KEY_2}
+            - GOOGLE_API_KEY_3=${GOOGLE_API_KEY_3}
         volumes:
             - ./qa_score:/app  
             - qa_score_data:/data/qa_score_data
@@ -52,7 +38,7 @@ services:
             - "8000:8000"
         healthcheck:
             test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
-            interval: 5s
+            interval: 11s
             timeout: 5s
             retries: 5
     middleware_server:
@@ -68,22 +54,33 @@ services:
         volumes:
             - ./middleware_server:/app
             - middleware_server_data:/data/middleware_server_data
+            - ./tests.py:/app/tests.py
         networks:
             - netuworku
         ports:
             - "8075:8075"
         healthcheck:
             test: ["CMD", "curl", "-f", "http://localhost:8075/health"]
-            interval: 5s
+            interval: 20s
             timeout: 5s
             retries: 5
 
         depends_on:
             postgres:
                 condition: service_healthy
+            qa_score:
+                condition: service_healthy
             redis_1:
                 condition: service_healthy
-            qa_score:
+            redis_2:
+                condition: service_healthy
+            redis_3:
+                condition: service_healthy
+            redis_4:
+                condition: service_healthy
+            redis_5:
+                condition: service_healthy
+            redis_6:
                 condition: service_healthy
     redisinsight:
         image: redislabs/redisinsight:2.70
@@ -96,8 +93,10 @@ services:
         volumes:
             - redisinsight_data:/data
         depends_on:
-            redis_1:
+            middleware_server:
                 condition: service_healthy
+
+
     generator:
         build: "./generator"
         container_name: "generator"
@@ -110,8 +109,106 @@ services:
             middleware_server:
                 condition: service_healthy
 
+    redis_1:
+        image: redis:8.2.1
+        container_name: "redis_1_gauss_lru_2mb"
+        volumes:
+            - ./cache/redis_1.conf:/usr/local/etc/redis/redis.conf
+            
+        command: ["redis-server", "/usr/local/etc/redis/redis.conf"]
+        networks:
+            - netuworku
+        ports:
+            - "6379:6379"
+        healthcheck:
+            test: ["CMD", "redis-cli", "-p", "6379", "ping"]
+            interval: 10s
+            timeout: 5s
+            retries: 5
 
-        
+    redis_2:
+        image: redis:8.2.1
+        container_name: "redis_2_gauss_lru_5mb"
+        volumes:
+            - ./cache/redis_2.conf:/usr/local/etc/redis/redis.conf
+            
+        command: ["redis-server", "/usr/local/etc/redis/redis.conf"]
+        networks:
+            - netuworku
+        ports:
+            - "6380:6380"
+        healthcheck:
+            test: ["CMD", "redis-cli", "-p", "6380", "ping"]
+            interval: 10s
+            timeout: 5s
+            retries: 5    
+    redis_3:
+        image: redis:8.2.1
+        container_name: "redis_3_gauss_lru_10mb"
+        volumes:
+            - ./cache/redis_3.conf:/usr/local/etc/redis/redis.conf
+            
+        command: ["redis-server", "/usr/local/etc/redis/redis.conf"]
+        networks:
+            - netuworku
+        ports:
+            - "6381:6381"
+        healthcheck:
+            test: ["CMD", "redis-cli", "-p", "6381", "ping"]
+            interval: 10s
+            timeout: 5s
+            retries: 5    
+
+    redis_4:
+        image: redis:8.2.1
+        container_name: "redis_4_gauss_lfu_2mb"
+        volumes:
+            - ./cache/redis_4.conf:/usr/local/etc/redis/redis.conf
+            
+        command: ["redis-server", "/usr/local/etc/redis/redis.conf"]
+        networks:
+            - netuworku
+        ports:
+            - "6382:6382"
+        healthcheck:
+            test: ["CMD", "redis-cli", "-p", "6382", "ping"]
+            interval: 10s
+            timeout: 5s
+            retries: 5
+
+    redis_5:
+        image: redis:8.2.1
+        container_name: "redis_5_gauss_lfu_5mb"
+        volumes:
+            - ./cache/redis_5.conf:/usr/local/etc/redis/redis.conf
+        command: ["redis-server", "/usr/local/etc/redis/redis.conf"]
+        networks:
+            - netuworku
+        ports:
+            - "6383:6383"
+        healthcheck:
+            test: ["CMD", "redis-cli", "-p", "6383", "ping"]
+            interval: 10s
+            timeout: 5s
+            retries: 5    
+
+    redis_6:
+        image: redis:8.2.1
+        container_name: "redis_6_gauss_lfu_10mb"
+        volumes:
+            - ./cache/redis_6.conf:/usr/local/etc/redis/redis.conf
+        command: ["redis-server", "/usr/local/etc/redis/redis.conf"]
+        networks:
+            - netuworku
+        ports:
+            - "6384:6384"
+        healthcheck:
+            test: ["CMD", "redis-cli", "-p", "6384", "ping"]
+            interval: 10s
+            timeout: 5s
+            retries: 5    
+
+
 volumes:
   qa_score_data:
   generator_data:

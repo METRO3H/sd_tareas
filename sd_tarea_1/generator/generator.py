@@ -32,9 +32,8 @@ def get_yahoo_dataset():
 
 def request_server(request_data):
     
-    question_title = f'{request_data["idx"]} - "{request_data["question"]}"'
-    print(question_title)
-    
+    gauss_row = f'{request_data["gauss"]["idx"]} - "{request_data["gauss"]["question"]}"'
+    print(gauss_row)
     
     URL = "http://middleware_server:8075"
     
@@ -53,8 +52,48 @@ def request_server(request_data):
     except Exception as e:
         print(f"    ↳ Error processing it :\n", e)
         return None
+
+def get_data_from_gauss_distribution(dataset, gauss_distribution, index):
+    selected_rows = dataset[dataset["class_index"] == gauss_distribution[index]]
     
-def generate_traffic():
+    selected_row = selected_rows.sample(n=1, random_state=SEED)
+    idx = selected_row.index[0]
+
+    data = {
+        "idx": int(idx),
+        "question": selected_row["question_title"].item(),
+        "yahoo_answer": selected_row["yahoo_answer"].item()
+    }
+    
+    return data
+
+def generate_traffic(dataset, gauss_distribution):
+    
+    for i in range(MAX_ITERATIONS):
+        print(f"[{i+1}/{MAX_ITERATIONS}]", end=" ")
+        
+        gauss_data = get_data_from_gauss_distribution(dataset, gauss_distribution, i)
+        
+        request_data = {
+            "gauss" : gauss_data,
+        }
+        
+        
+        response = request_server(request_data)
+        
+        if response is None:
+            print(f"[Error] Request not processed")
+            continue
+        
+        
+        print(response)
+        
+        time.sleep(11)
+        
+        
+    
+if __name__ == "__main__":
+    
     dataset = get_yahoo_dataset()
 
     if dataset is None:
@@ -66,32 +105,5 @@ def generate_traffic():
         exit(1)
         
     print(" ")
-    for i in range(MAX_ITERATIONS):
-        print(f"[{i+1}/{MAX_ITERATIONS}]", end=" ")
-        
-        selected_rows = dataset[dataset["class_index"] == gauss_distribution[i]]
-        
-        selected_row = selected_rows.sample(n=1, random_state=SEED)
-        idx = selected_row.index[0]
-
-        request_data = {
-            "idx": int(idx),
-            "question": selected_row["question_title"].item(),
-            "yahoo_answer": selected_row["yahoo_answer"].item()
-        }
-        
-        response = request_server(request_data)
-        
-        # if response is None:
-        #     continue
-        
-        # response_json = json.dumps(response.json(), indent=6, ensure_ascii=True)
-        
-        # print(response_json)
-        
-        time.sleep(11)
-        
-        
     
-if __name__ == "__main__":
-    generate_traffic()
+    generate_traffic(dataset, gauss_distribution)

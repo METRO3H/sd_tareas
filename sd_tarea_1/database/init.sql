@@ -1,4 +1,4 @@
-CREATE TABLE IF NOT EXISTS gauss_lru_5mb_1min  (
+CREATE TABLE IF NOT EXISTS gauss_lru_2mb (
     id SERIAL PRIMARY KEY,          -- id autoincremental
     idx INT NOT NULL,               -- índice de la pregunta
     question TEXT NOT NULL,         -- la pregunta
@@ -8,6 +8,63 @@ CREATE TABLE IF NOT EXISTS gauss_lru_5mb_1min  (
     cache_hit INT DEFAULT 0,        -- numero de veces que el resultado se ha obtenido de la caché
     creation_date TIMESTAMP DEFAULT NOW()  -- fecha de creación
 );
+
+CREATE TABLE IF NOT EXISTS gauss_lru_5mb (
+    id SERIAL PRIMARY KEY,          
+    idx INT NOT NULL,               
+    question TEXT NOT NULL,         
+    yahoo_answer TEXT NOT NULL,     
+    gemini_answer TEXT,             
+    score INT NOT NULL,             
+    cache_hit INT DEFAULT 0,        
+    creation_date TIMESTAMP DEFAULT NOW()
+);
+
+CREATE TABLE IF NOT EXISTS gauss_lru_10mb (
+    id SERIAL PRIMARY KEY,          
+    idx INT NOT NULL,               
+    question TEXT NOT NULL,         
+    yahoo_answer TEXT NOT NULL,     
+    gemini_answer TEXT,             
+    score INT NOT NULL,             
+    cache_hit INT DEFAULT 0,        
+    creation_date TIMESTAMP DEFAULT NOW()
+);
+
+CREATE TABLE IF NOT EXISTS gauss_lfu_2mb (
+    id SERIAL PRIMARY KEY,          
+    idx INT NOT NULL,               
+    question TEXT NOT NULL,         
+    yahoo_answer TEXT NOT NULL,     
+    gemini_answer TEXT,             
+    score INT NOT NULL,             
+    cache_hit INT DEFAULT 0,        
+    creation_date TIMESTAMP DEFAULT NOW()
+);
+
+CREATE TABLE IF NOT EXISTS gauss_lfu_5mb (
+    id SERIAL PRIMARY KEY,          
+    idx INT NOT NULL,               
+    question TEXT NOT NULL,         
+    yahoo_answer TEXT NOT NULL,     
+    gemini_answer TEXT,             
+    score INT NOT NULL,             
+    cache_hit INT DEFAULT 0,        
+    creation_date TIMESTAMP DEFAULT NOW()
+);
+
+CREATE TABLE IF NOT EXISTS gauss_lfu_10mb (
+    id SERIAL PRIMARY KEY,          
+    idx INT NOT NULL,               
+    question TEXT NOT NULL,         
+    yahoo_answer TEXT NOT NULL,     
+    gemini_answer TEXT,             
+    score INT NOT NULL,             
+    cache_hit INT DEFAULT 0,        
+    creation_date TIMESTAMP DEFAULT NOW()
+);
+
+
 
 
 
