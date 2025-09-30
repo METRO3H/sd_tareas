@@ -1,7 +1,7 @@
-from distributions import generate_gaussian_distribution
+from gauss_distribution import generate_gaussian_dataset_distribution
+from checkpoint import load_checkpoint, save_checkpoint
+from zipf_distribution import generate_zipf_dataset_distribution
 import pandas
-import time
-import json
 import requests
 import numpy
 
@@ -12,103 +12,90 @@ RNG = numpy.random.default_rng(SEED)
 
 def filter_dataset(dataset):
     dataset.columns = ["class_index", "question_title", "question_body", "yahoo_answer"]
-    dataset.drop(columns = ["question_body"], inplace=True)
-    
-    # filter empty values for columns question_title and yahoo_answer
+    dataset.drop(columns=["question_body"], inplace=True)
     dataset.dropna(subset=["question_title", "yahoo_answer"], inplace=True)
-    
     return dataset
 
 def get_yahoo_dataset():
     try:
         dataset_raw = pandas.read_csv("./dataset/qa_yahoo.csv", header=None, sep=",", quotechar='"')
-
         dataset = filter_dataset(dataset_raw)
-        
         print("[Status] Dataset loaded successfully")
         return dataset
-    
     except Exception as e:
         print(f"[Error] Dataset not loaded:\n", e)
         return None
 
-
 def request_server(request_data):
-    
     gauss_row = f'{request_data["gauss"]["idx"]} - "{request_data["gauss"]["question"]}"'
-    print(gauss_row)
-    
+    zipf_row = f'{request_data["zipf"]["idx"]} - "{request_data["zipf"]["question"]}"'
+    print(f"    ↳ Gauss: {gauss_row}")
+    print(f"    ↳ Zipf : {zipf_row}")
+
     URL = "http://middleware_server:8075"
     
     try:
-        # Have to define the URL
         response = requests.post(URL, json=request_data)
         
         if response.status_code != 200:
             raise Exception(f"There is an error. Status code: {response.status_code}")
         
-        print("    ↳ Proccessed successfully")
-        
+        print("    ↳ Processed successfully")
         return response.json()
-       
     
     except Exception as e:
         print(f"    ↳ Error processing it :\n", e)
         return None
 
-def get_data_from_gauss_distribution(dataset, gauss_distribution, index):
-    selected_rows = dataset[dataset["class_index"] == gauss_distribution[index]]
+def get_data_from_distribution(dataset, distribution_indices, index):
+    row_idx = distribution_indices[index]
+    selected_row = dataset.iloc[row_idx]
     
-    rand_idx = RNG.integers(len(selected_rows))
-    selected_row = selected_rows.iloc[rand_idx]
-    
-    idx = selected_rows.index[rand_idx]
-
-    data = {
-        "idx": int(idx),
+    return {
+        "idx": int(row_idx),
         "question": selected_row["question_title"],
         "yahoo_answer": selected_row["yahoo_answer"]
     }
-    
-    return data
 
-def generate_traffic(dataset, gauss_distribution):
-    
-    for i in range(MAX_ITERATIONS):
-        print(f"[{i+1}/{MAX_ITERATIONS}]", end=" ")
-        
-        gauss_data = get_data_from_gauss_distribution(dataset, gauss_distribution, i)
+def generate_traffic(dataset, gauss_indices, zipf_indices, start_index=0):
+    for i in range(start_index, MAX_ITERATIONS):
+        print(f"[{i+1}/{MAX_ITERATIONS}] Starting request")
+
+        gauss_data = get_data_from_distribution(dataset, gauss_indices, i)
+        zipf_data  = get_data_from_distribution(dataset, zipf_indices, i)
         
         request_data = {
-            "gauss" : gauss_data,
+            "gauss": gauss_data,
+            "zipf": zipf_data,
         }
         
-        
         response = request_server(request_data)
+        
+        save_checkpoint(i)
         
         if response is None:
             print(f"[Error] Request not processed")
             continue
         
-        
-        print(response)
-        
-        # time.sleep(11)
-        
-        
-    
+        # print(response)
+
 if __name__ == "__main__":
-    
     dataset = get_yahoo_dataset()
 
     if dataset is None:
         exit(1)
 
-    gauss_distribution = generate_gaussian_distribution(MAX_ITERATIONS, SEED)
+    # Generamos ambas distribuciones
+    gauss_indices = generate_gaussian_dataset_distribution(dataset, MAX_ITERATIONS, SEED)
+    zipf_indices  = generate_zipf_dataset_distribution(dataset, MAX_ITERATIONS, SEED, a=1.5)
     
-    if gauss_distribution is None:
+    if gauss_indices is None or zipf_indices is None:
         exit(1)
         
     print(" ")
     
-    generate_traffic(dataset, gauss_distribution)
+    start_index = load_checkpoint()
+    
+    print(f"[Resume] Starting from iteration {start_index + 1}")
+
+    generate_traffic(dataset, gauss_indices, zipf_indices, start_index)

@@ -1,7 +1,7 @@
 from fastapi import FastAPI, HTTPException
 from cache_manager import CacheManager
-from p_types.types import QA, Gauss
-from tests import gauss_tests
+from p_types.types import QA, Gauss, Zipf
+from tests import gauss_tests, zipf_tests
 import requests
 import db
 
@@ -40,7 +40,7 @@ def process_request(config: str, idx: int, question: str, yahoo_answer: str, gem
     
     if idx_status:
         print(f'[Status] Request with idx "{idx}" already in cache')
-        db.register_cache_hit(config, idx) 
+        db.register_cache_event(config, idx, 'hit')
         
         return gemini_answer, score
     
@@ -50,6 +50,8 @@ def process_request(config: str, idx: int, question: str, yahoo_answer: str, gem
     
     if db_qa:
         print(f'[Status] Request with idx "{idx}" already in database')
+        
+        db.register_cache_event(config, idx, 'miss')
         
         CacheManager.save_cache(config, idx, db_qa)
         
@@ -99,20 +101,47 @@ def process_gauss_request(gauss_data: Gauss):
         print(f'[Error] Request with gauss distribution, and idx "{idx}" not processed:\n', e)
         return None
 
+def process_zipf_request(zipf_data: Zipf):
+    try:
+        idx = zipf_data.idx
+        question = zipf_data.question
+        yahoo_answer = zipf_data.yahoo_answer
+        
+        gemini_answer = ""
+        score = -1
+        for config in zipf_tests:
+            print(f'[Status] Processing request with config "{config}" and idx "{idx}"')
+            gemini_answer, score = process_request(config, idx, question, yahoo_answer, gemini_answer, score)
+
+        message = f'[Status] Request with zipf distribution, and idx "{idx}" processed successfully'
+
+        return message
+
+    except Exception as e:
+        print(f'[Error] Request with zipf distribution, and idx "{idx}" not processed:\n', e)
+        return None
+
+
 @app.post("/")
 def qa_request(request: QA):
     
     try:
 
         gauss_data = request.gauss
+        zipf_data  = request.zipf
         
         gauss_result = process_gauss_request(gauss_data)
+        zipf_result  = process_zipf_request(zipf_data)
     
         if not gauss_result:
             raise Exception("There was an error processing the gauss request")
     
+        if not zipf_result:
+            raise Exception("There was an error processing the zipf request")
+        
         result = {
-            "gauss": gauss_result
+            "gauss": gauss_result,
+            "zipf": zipf_result
         }
         
         return result

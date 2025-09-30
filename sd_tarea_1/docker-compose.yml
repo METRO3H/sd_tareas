@@ -82,6 +82,19 @@ services:
                 condition: service_healthy
             redis_6:
                 condition: service_healthy
+            redis_7:
+                condition: service_healthy
+            redis_8:
+                condition: service_healthy
+            redis_9:
+                condition: service_healthy
+            redis_10:
+                condition: service_healthy
+            redis_11:
+                condition: service_healthy
+            redis_12:
+                condition: service_healthy
+            
     redisinsight:
         image: redislabs/redisinsight:2.70
         container_name: redisinsight
@@ -114,6 +127,7 @@ services:
         container_name: "redis_1_gauss_lru_2mb"
         volumes:
             - ./cache/redis_1.conf:/usr/local/etc/redis/redis.conf
+            - redis_1_data:/data
             
         command: ["redis-server", "/usr/local/etc/redis/redis.conf"]
         networks:
@@ -131,6 +145,7 @@ services:
         container_name: "redis_2_gauss_lru_5mb"
         volumes:
             - ./cache/redis_2.conf:/usr/local/etc/redis/redis.conf
+            - redis_2_data:/data
             
         command: ["redis-server", "/usr/local/etc/redis/redis.conf"]
         networks:
@@ -147,6 +162,7 @@ services:
         container_name: "redis_3_gauss_lru_10mb"
         volumes:
             - ./cache/redis_3.conf:/usr/local/etc/redis/redis.conf
+            - redis_3_data:/data
             
         command: ["redis-server", "/usr/local/etc/redis/redis.conf"]
         networks:
@@ -164,7 +180,8 @@ services:
         container_name: "redis_4_gauss_lfu_2mb"
         volumes:
             - ./cache/redis_4.conf:/usr/local/etc/redis/redis.conf
-            
+            - redis_4_data:/data
+
         command: ["redis-server", "/usr/local/etc/redis/redis.conf"]
         networks:
             - netuworku
@@ -181,6 +198,7 @@ services:
         container_name: "redis_5_gauss_lfu_5mb"
         volumes:
             - ./cache/redis_5.conf:/usr/local/etc/redis/redis.conf
+            - redis_5_data:/data
         command: ["redis-server", "/usr/local/etc/redis/redis.conf"]
         networks:
             - netuworku
@@ -197,6 +215,7 @@ services:
         container_name: "redis_6_gauss_lfu_10mb"
         volumes:
             - ./cache/redis_6.conf:/usr/local/etc/redis/redis.conf
+            - redis_6_data:/data
         command: ["redis-server", "/usr/local/etc/redis/redis.conf"]
         networks:
             - netuworku
@@ -208,13 +227,130 @@ services:
             timeout: 5s
             retries: 5    
 
+    redis_7:
+        image: redis:8.2.1
+        container_name: "redis_7_zipf_lru_2mb"
+        volumes:
+            - ./cache/redis_7.conf:/usr/local/etc/redis/redis.conf
+            - redis_7_data:/data
+        
+        command: ["redis-server", "/usr/local/etc/redis/redis.conf"]
+        networks:
+            - netuworku
+        ports:
+            - "6385:6385"
+        healthcheck:
+            test: ["CMD", "redis-cli", "-p", "6385", "ping"]
+            interval: 10s
+            timeout: 5s
+            retries: 5
 
+
+    redis_8:
+        image: redis:8.2.1
+        container_name: "redis_8_zipf_lru_5mb"
+        volumes:
+            - ./cache/redis_8.conf:/usr/local/etc/redis/redis.conf
+            - redis_8_data:/data
+        
+        command: ["redis-server", "/usr/local/etc/redis/redis.conf"]
+        networks:
+            - netuworku
+        ports:
+            - "6386:6386"
+        healthcheck:
+            test: ["CMD", "redis-cli", "-p", "6386", "ping"]
+            interval: 10s
+            timeout: 5s
+            retries: 5    
+
+    redis_9:
+        image: redis:8.2.1
+        container_name: "redis_9_zipf_lru_10mb"
+        volumes:
+            - ./cache/redis_9.conf:/usr/local/etc/redis/redis.conf
+            - redis_9_data:/data
+        
+        command: ["redis-server", "/usr/local/etc/redis/redis.conf"]
+        networks:
+            - netuworku
+        ports:
+            - "6387:6387"
+        healthcheck:
+            test: ["CMD", "redis-cli", "-p", "6387", "ping"]
+            interval: 10s
+            timeout: 5s
+            retries: 5
+    redis_10:
+        image: redis:8.2.1
+        container_name: "redis_10_zipf_lfu_2mb"
+        volumes:
+            - ./cache/redis_10.conf:/usr/local/etc/redis/redis.conf
+            - redis_10_data:/data
+        
+        command: ["redis-server", "/usr/local/etc/redis/redis.conf"]
+        networks:
+            - netuworku
+        ports:
+            - "6388:6388"
+        healthcheck:
+            test: ["CMD", "redis-cli", "-p", "6388", "ping"]
+            interval: 10s
+            timeout: 5s
+            retries: 5
+
+    redis_11:
+        image: redis:8.2.1
+        container_name: "redis_11_zipf_lfu_5mb"
+        volumes:
+            - ./cache/redis_11.conf:/usr/local/etc/redis/redis.conf
+            - redis_11_data:/data
+        
+        command: ["redis-server", "/usr/local/etc/redis/redis.conf"]
+        networks:
+            - netuworku
+        ports:
+            - "6389:6389"
+        healthcheck:
+            test: ["CMD", "redis-cli", "-p", "6389", "ping"]
+            interval: 10s
+            timeout: 5s
+            retries: 5    
+
+    redis_12:
+        image: redis:8.2.1
+        container_name: "redis_12_zipf_lfu_10mb"
+        volumes:
+            - ./cache/redis_12.conf:/usr/local/etc/redis/redis.conf
+            - redis_12_data:/data
+        
+        command: ["redis-server", "/usr/local/etc/redis/redis.conf"]
+        networks:
+            - netuworku
+        ports:
+            - "6390:6390"
+        healthcheck:
+            test: ["CMD", "redis-cli", "-p", "6390", "ping"]
+            interval: 10s
+            timeout: 5s
 volumes:
   qa_score_data:
   generator_data:
   postgres_data:
   middleware_server_data:
   redisinsight_data:
+  redis_1_data:
+  redis_2_data:
+  redis_3_data:
+  redis_4_data:
+  redis_5_data:
+  redis_6_data:
+  redis_7_data:
+  redis_8_data:
+  redis_9_data:
+  redis_10_data:
+  redis_11_data:
+  redis_12_data:
   
 networks:
    netuworku:

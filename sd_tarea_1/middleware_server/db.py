@@ -30,14 +30,19 @@ def check_qa(table_name, idx):
 
 
 
-def register_cache_hit(table_name, idx):
-    query = "CALL register_cache_hit(%s, %s)"
+def register_cache_event(table_name, idx, event_type):
+
+    if event_type not in ('hit', 'miss'):
+        raise ValueError("event_type must be 'hit' or 'miss'")
+
+    query = "CALL register_cache_event(%s, %s, %s)"
     try:
         with get_connection() as connection:
             with connection.cursor() as cursor:
-                cursor.execute(query, (table_name, idx))
+                cursor.execute(query, (table_name, idx, event_type))
         return True
     except Exception as e:
+        print("Error registering cache event:", e)
         return False
 
 def save_qa(table_name, idx, question, yahoo_answer, gemini_answer, score):
