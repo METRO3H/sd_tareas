@@ -38,10 +38,7 @@ def graph_distribution(distribution, graph_title="Distribución observada"):
     plt.show()
 
 def generate_gaussian_dataset_distribution(dataset, MAX_ITERATIONS, SEED):
-    """
-    Versión optimizada que mantiene EXACTAMENTE la misma distribución que tu enfoque original
-    pero de manera más eficiente
-    """
+
     RNG = numpy.random.default_rng(SEED)
     
     try:
@@ -77,8 +74,8 @@ def generate_gaussian_dataset_distribution(dataset, MAX_ITERATIONS, SEED):
                 else:
                     raise Exception("No hay datos disponibles en el dataset")
         
-        print(f"[Status] Optimized gaussian distribution generated successfully")
-        print(f"[Info] Target class distribution: {dict(Counter(transformed_classes))}")
+        print(f"[Status] Gaussian distribution generated successfully")
+        print(f"    ↳ Target class distribution: {dict(Counter(transformed_classes))}")
         
         return distribution_indices
     

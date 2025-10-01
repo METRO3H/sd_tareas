@@ -2,6 +2,7 @@ from fastapi import FastAPI, HTTPException
 from cache_manager import CacheManager
 from p_types.types import QA, Gauss, Zipf
 from tests import gauss_tests, zipf_tests
+import random
 import requests
 import db
 
@@ -10,6 +11,7 @@ import db
 app = FastAPI()
 
 def compare_answers(question: str, yahoo_answer: str):
+    
     
     request_data = {
         "question": question,

@@ -51,7 +51,10 @@ def save_qa(table_name, idx, question, yahoo_answer, gemini_answer, score):
         with get_connection() as connection:
             with connection.cursor() as cursor:
                 cursor.execute(query, (table_name, idx, question, yahoo_answer, gemini_answer, score))
+        print(f"QA with idx {idx} saved in table {table_name} successfully")
         return True
     except Exception as e:
+        print("Error saving QA in table ", table_name, ":")
+        print(e)
         return False
             

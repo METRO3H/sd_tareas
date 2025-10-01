@@ -13,4 +13,8 @@ def generate_zipf_dataset_distribution(dataset, max_iterations, seed=123, a=1.5)
 
     # muestreo con reemplazo según p_k
     indices = rng.choice(n, size=max_iterations, replace=True, p=probs)
-    return indices.tolist()
+    indices = indices.tolist()
+    
+    print(f"[Status] Zipf distribution generated successfully")
+    
+    return indices

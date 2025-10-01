@@ -1,0 +1,6 @@
+
+<!-- Buen comando para eliminar todos los volumenes menos de redisinsight_data -->
+```bash
+docker-compose down; docker volume ls -q | grep -v "redisinsight_data" | xargs -r docker volume rm
+docker-compose up -d
+```
