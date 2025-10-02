@@ -1,4 +1,4 @@
-# Tarea 1 - Sistemas Distribuidos | Plataforma de Análisis de Tráfico en Región Metropolitana
+# Tarea 1 - Sistemas Distribuidos | Plataforma de análisis de preguntas y respuestas en Internet
 ![Docker](https://img.shields.io/badge/docker-ready-blue)
 ![FastAPI](https://img.shields.io/badge/FastAPI-async-lightgreen)
 ![Redis](https://img.shields.io/badge/redis-caching-red)
@@ -11,7 +11,7 @@ Este es un proyecto para analizar el trafico de consultas segun distintas distri
 
 ## 📑 Contenidos
 
-- [Tarea 1 - Sistemas Distribuidos | Plataforma de Análisis de Tráfico en Región Metropolitana](#tarea-1---sistemas-distribuidos--plataforma-de-análisis-de-tráfico-en-región-metropolitana)
+- [Tarea 1 - Sistemas Distribuidos | Plataforma de análisis de preguntas y respuestas en Internet](#tarea-1---sistemas-distribuidos--plataforma-de-análisis-de-preguntas-y-respuestas-en-internet)
   - [📑 Contenidos](#-contenidos)
   - [🚦 ¿Que hace este proyecto?](#-que-hace-este-proyecto)
   - [📖 Características principales](#-características-principales)
