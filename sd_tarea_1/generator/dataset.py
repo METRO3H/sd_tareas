@@ -3,7 +3,7 @@ import pandas
 
 def limit_dataset(dataset, max_rows=20000, seed=123):
     if len(dataset) <= max_rows:
-        return dataset  # no limitar si ya es pequeño
+        return dataset
     
     n_classes = dataset["class_index"].nunique()
     per_class = max_rows // n_classes

@@ -9,7 +9,7 @@ class CacheManager:
     for name, cfg in tests_config.items():
         _redis_clients[name] = redis.Redis(
             host=cfg["host"],
-            port=cfg["port"],  # falla si "port" no está
+            port=cfg["port"],
             decode_responses=True
         )
 

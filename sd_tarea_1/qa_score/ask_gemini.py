@@ -3,7 +3,6 @@ import os
 import random
 
 # --- Pool de modelos ---
-# Suponiendo que tienes varias API keys
 API_KEYS = [
     os.getenv("GOOGLE_API_KEY_1"),
     os.getenv("GOOGLE_API_KEY_2"),
