@@ -2,7 +2,6 @@ from fastapi import FastAPI
 from pydantic import BaseModel
 from ask_gemini import ask_gemini
 from score_answer import score_answer
-import json
 class QA(BaseModel):
     question: str
     yahoo_answer: str
